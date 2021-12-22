@@ -29,8 +29,8 @@ let config = {
 	language: "en",
 	locale: "en-US",
 	logLevel: ["INFO", "LOG", "WARN", "ERROR"], // Add "DEBUG" for even more logging
-	timeFormat: 24,
-	units: "metric",
+	timeFormat: 12,
+	units: "imperial",
 	// serverOnly:  true/false/"local" ,
 	// local for armv6l processors, default
 	//   starts serveronly and then starts chrome browser
@@ -72,9 +72,9 @@ let config = {
 			config: {
 				weatherProvider: "openweathermap",
 				type: "current",
-				location: "New York",
-				locationID: "5128581", //ID from http://bulk.openweathermap.org/sample/city.list.json.gz; unzip the gz file and find your city
-				apiKey: "YOUR_OPENWEATHER_API_KEY"
+				lat: 41.03638987,
+				lon: -73.833201367,
+				apiKey: "25b8f1bf825a95e31f0c559fcf4a86c2"
 			}
 		},
 		{
@@ -84,9 +84,9 @@ let config = {
 			config: {
 				weatherProvider: "openweathermap",
 				type: "forecast",
-				location: "New York",
-				locationID: "5128581", //ID from http://bulk.openweathermap.org/sample/city.list.json.gz; unzip the gz file and find your city
-				apiKey: "YOUR_OPENWEATHER_API_KEY"
+				lat: 41.03638987,
+				lon: -73.833201367,
+				apiKey: "25b8f1bf825a95e31f0c559fcf4a86c2"
 			}
 		},
 		{
@@ -97,6 +97,10 @@ let config = {
 					{
 						title: "New York Times",
 						url: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"
+					},
+					{
+						title: "CNN",
+						url: "http://rss.cnn.com/rss/cnn_topstories.rss"
 					}
 				],
 				showSourceTitle: true,
