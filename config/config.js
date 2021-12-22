@@ -86,6 +86,18 @@ let config = {
 					evening: [
 						"Damn, you going out like that?",
 						"0_o"
+					],
+					"....-01-01": [
+						"Happy new year Em!"
+					],
+					"....-02-14": [
+						"<3 Happy Valentine's"
+					],
+					"....-10-07": [
+						"HAPPY BIRTHDAY! WOOOOOOOOO"
+					],
+					"....-09-22": [
+						"Hey it's our anniversary\nI may not have remembered yet, I wrote this a while ago\nBut anyways, happy anniversary my love :)"
 					]
 				}
 			}
