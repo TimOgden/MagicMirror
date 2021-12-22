@@ -64,7 +64,30 @@ let config = {
 		},
 		{
 			module: "compliments",
-			position: "lower_third"
+			position: "lower_third",
+			config: {
+				compliments: {
+					anytime: [
+						"Hey, beautiful ;)",
+						"Oh she cute",
+						"Well look at you!",
+						"Wow, your hair is so pretty!"
+					],
+					morning: [
+						"Good morning, love",
+						"You look nice today",
+						"Did you sleep well?"
+					],
+					afternoon: [
+						"I hope your day is going well :)",
+						"You are so funny\nWe are so funny, it's ridiculous"
+					],
+					evening: [
+						"Damn, you going out like that?",
+						"0_o"
+					]
+				}
+			}
 		},
 		{
 			module: "weather",
