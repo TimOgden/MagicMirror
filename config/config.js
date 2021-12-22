@@ -71,7 +71,8 @@ let config = {
 						"Hey, beautiful ;)",
 						"Oh she cute",
 						"Well look at you!",
-						"Wow, your hair is so pretty!"
+						"Wow, your hair is so pretty!",
+						"You are so cool"
 					],
 					morning: [
 						"Good morning, love",
