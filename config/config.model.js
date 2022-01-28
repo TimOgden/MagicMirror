@@ -65,6 +65,7 @@ let config = {
 		},
 		{
 			module: "compliments",
+			disabled: '{compliments_disabled}',
 			position: "bottom_bar",
 			config: {
       			compliments: {
