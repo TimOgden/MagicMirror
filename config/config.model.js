@@ -68,6 +68,23 @@ let config = {
 			}
 		},
 		{
+			module: "MMM-calendar",
+			header: '{other_calendar_name}',
+			position: "top_left",
+			config: {
+				calendars: [
+					{
+						symbol: "calendar-check",
+						url: "webcal://www.calendarlabs.com/ical-calendar/ics/76/US_Holidays.ics"
+					},
+					{
+						symbol: "calendar-check",
+						url: '{other_calendar_url}'
+					}
+				]
+			}
+		},
+		{
 			module: "compliments",
 			disabled: '{compliments_disabled}',
 			position: "bottom_bar",
