@@ -66,42 +66,7 @@ let config = {
 		{
 			module: "compliments",
 			position: "bottom_bar",
-			config: {
-				compliments: {
-					anytime: [
-						"Hey, beautiful ;)",
-						"Oh she cute",
-						"Well look at you!",
-						"Wow, your hair is so pretty!",
-						"You are so cool"
-					],
-					morning: [
-						"Good morning, love",
-						"You look nice today",
-						"Did you sleep well?"
-					],
-					afternoon: [
-						"I hope your day is going well :)",
-						"You are so funny\nWe are so funny, it's ridiculous"
-					],
-					evening: [
-						"Damn, you going out like that?",
-						"0_o"
-					],
-					"....-01-01": [
-						"Happy new year Em!"
-					],
-					"....-02-14": [
-						"<3 Happy Valentine's"
-					],
-					"....-10-07": [
-						"HAPPY BIRTHDAY! WOOOOOOOOO"
-					],
-					"....-09-22": [
-						"Hey it's our anniversary\nI may not have remembered yet, I wrote this a while ago\nBut anyways, happy anniversary my love :)"
-					]
-				}
-			}
+			config: "{compliments_config}"
 		},
 		{
 			module: "weather",
