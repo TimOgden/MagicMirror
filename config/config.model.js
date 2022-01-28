@@ -52,13 +52,34 @@ let config = {
 		},
 		{
 			module: "calendar",
-			header: "US Holidays",
+			header: '{user_calendar_name}',
 			position: "top_left",
 			config: {
 				calendars: [
 					{
 						symbol: "calendar-check",
 						url: "webcal://www.calendarlabs.com/ical-calendar/ics/76/US_Holidays.ics"
+					},
+					{
+						symbol: "calendar-check",
+						url: '{user_calendar_url}'
+					}
+				]
+			}
+		},
+		{
+			module: "calendar",
+			header: '{other_calendar_name}',
+			position: "top_left",
+			config: {
+				calendars: [
+					{
+						symbol: "calendar-check",
+						url: "webcal://www.calendarlabs.com/ical-calendar/ics/76/US_Holidays.ics"
+					},
+					{
+						symbol: "calendar-check",
+						url: '{other_calendar_url}'
 					}
 				]
 			}
