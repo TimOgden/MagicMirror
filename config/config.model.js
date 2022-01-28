@@ -83,10 +83,10 @@ let config = {
 					],
 					afternoon: [
 						'I hope your day is going well :)',
-						'You are so funny\nWe are so funny, it's ridiculous'
+						'You are so funny\nWe are so funny, it\'s ridiculous'
 					],
 					evening: [
-						"Damn, you going out like that?',
+						'Damn, you going out like that?',
 						'0_o'
 					],
 					'....-01-01': [
@@ -111,8 +111,8 @@ let config = {
 			config: {
 				weatherProvider: "openweathermap",
 				type: "current",
-				lat: {latitude},
-				lon: {longitude},
+				lat: '{latitude}',
+				lon: '{longitude}',
 				apiKey: "25b8f1bf825a95e31f0c559fcf4a86c2"
 			}
 		},
@@ -123,8 +123,8 @@ let config = {
 			config: {
 				weatherProvider: "openweathermap",
 				type: "forecast",
-				lat: {latitude},
-				lon: {longitude},
+				lat: '{latitude}',
+				lon: '{longitude}',
 				apiKey: "25b8f1bf825a95e31f0c559fcf4a86c2"
 			}
 		},
