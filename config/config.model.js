@@ -8,26 +8,6 @@
  * and https://docs.magicmirror.builders/modules/configuration.html
  */
 
-function loadJSON(filePath) {
-	if (typeof module !== "undefined") {
-		return require(filePath);
-	} else {
-		try (
-			var xmlhttp = new XMLHttpRequest();
-			xmlhttp.open("GET", filePath, false);
-			xmlhttp.send();
-			if(xmlhttp.stats === 200) {
-				return JSON.parse(xmlhttp.responseText);
-			} else {
-				throw "Unexpected status code!";
-			}
-		} catch (e) {
-			console.error(e);
-			return {};
-		}
-	}
-}
-
 let config = {
 	address: "localhost", 	// Address to listen on, can be:
 							// - "localhost", "127.0.0.1", "::1" to listen on loopback interface
@@ -59,7 +39,6 @@ let config = {
 	// true, force serveronly mode, because you want to.. no UI on this device
 
 	modules: [
-		loadJSON("config/private_data.json"),
 		{
 			module: "alert",
 		},
@@ -130,8 +109,8 @@ let config = {
 			config: {
 				weatherProvider: "openweathermap",
 				type: "current",
-				lat: 40,
-				lon: -70,
+				lat: {latitude},
+				lon: {longitude},
 				apiKey: "25b8f1bf825a95e31f0c559fcf4a86c2"
 			}
 		},
@@ -142,8 +121,8 @@ let config = {
 			config: {
 				weatherProvider: "openweathermap",
 				type: "forecast",
-				lat: 40,
-				lon: -70,
+				lat: {latitude},
+				lon: {longitude},
 				apiKey: "25b8f1bf825a95e31f0c559fcf4a86c2"
 			}
 		},
