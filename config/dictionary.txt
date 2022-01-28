@@ -1,7 +1,7 @@
 "'{latitude}'"  : "40.74735"
 "'{longitude}'" : "-73.48095"
 "'{user_calendar_name}'"  : "'Tim\'s Calendar'"
-"'{user_calendar_url}'" : "https://calendar.google.com/calendar/ical/togden1999%40gmail.com/private-cc4214cb59977bf9a5685af7ace480fa/basic.ics"
+"'{user_calendar_url}'" : "'https://calendar.google.com/calendar/ical/togden1999%40gmail.com/private-cc4214cb59977bf9a5685af7ace480fa/basic.ics'"
 "'{other_calendar_name}'" : "'Emily\'s Calendar'"
 "'{other_calendar_url}'"  : "''"
 "'{compliments_disabled}'"  : "true"
