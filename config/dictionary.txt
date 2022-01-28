@@ -2,7 +2,7 @@
 "'{longitude}'" : "-73.48095"
 "'{user_calendar_name}'"  : "'Tim\'s Calendar'"
 "'{user_calendar_url}'" : "https://calendar.google.com/calendar/ical/togden1999%40gmail.com/private-cc4214cb59977bf9a5685af7ace480fa/basic.ics"
-"'{compliments_config}'"  : "config: {
+"'{compliments_config}'"  : "{
 				compliments: {
 					anytime: [
 						'Hey, beautiful ;)',
