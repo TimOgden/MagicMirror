@@ -12,7 +12,7 @@ function loadJSON(filePath) {
 	if (typeof module !== "undefined") {
 		return require(filePath);
 	} else {
-		try (
+		try {
 			var xmlhttp = new XMLHttpRequest();
 			xmlhttp.open("GET", filePath, false);
 			xmlhttp.send();
@@ -59,7 +59,6 @@ let config = {
 	// true, force serveronly mode, because you want to.. no UI on this device
 
 	modules: [
-		loadJSON("config/private_data.json"),
 		{
 			module: "alert",
 		},
@@ -130,8 +129,8 @@ let config = {
 			config: {
 				weatherProvider: "openweathermap",
 				type: "current",
-				lat: 40,
-				lon: -70,
+				lat: 41.0361755,
+				lon: -73.8331602,
 				apiKey: "25b8f1bf825a95e31f0c559fcf4a86c2"
 			}
 		},
@@ -142,8 +141,8 @@ let config = {
 			config: {
 				weatherProvider: "openweathermap",
 				type: "forecast",
-				lat: 40,
-				lon: -70,
+				lat: 41.0361755,
+				lon: -73.8331602,
 				apiKey: "25b8f1bf825a95e31f0c559fcf4a86c2"
 			}
 		},
