@@ -1,15 +1,14 @@
-/* Magic Mirror Test config for analog clock face
- *
- * MIT Licensed.
- */
 let config = {
+	address: "0.0.0.0",
+	ipWhitelist: [],
 	modules: [
 		{
 			module: "clock",
 			position: "middle_center",
 			config: {
 				displayType: "analog",
-				analogFace: "face-006"
+				analogFace: "face-006",
+				showDate: false
 			}
 		}
 	]

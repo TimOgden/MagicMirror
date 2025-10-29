@@ -9,16 +9,17 @@
  *
  * Copyright 2014, Codrops
  * https://tympanus.net/codrops/
+ * @param {object} window The window object
  */
 (function (window) {
+
 	/**
 	 * Extend one object with another one
-	 *
 	 * @param {object} a The object to extend
 	 * @param {object} b The object which extends the other, overwrites existing keys
 	 * @returns {object} The merged object
 	 */
-	function extend(a, b) {
+	function extend (a, b) {
 		for (let key in b) {
 			if (b.hasOwnProperty(key)) {
 				a[key] = b[key];
@@ -29,11 +30,10 @@
 
 	/**
 	 * NotificationFx constructor
-	 *
 	 * @param {object} options The configuration options
 	 * @class
 	 */
-	function NotificationFx(options) {
+	function NotificationFx (options) {
 		this.options = extend({}, this.options);
 		extend(this.options, options);
 		this._init();
@@ -64,10 +64,10 @@
 		ttl: 6000,
 		al_no: "ns-box",
 		// callbacks
-		onClose: function () {
+		onClose () {
 			return false;
 		},
-		onOpen: function () {
+		onOpen () {
 			return false;
 		}
 	};
@@ -78,8 +78,8 @@
 	NotificationFx.prototype._init = function () {
 		// create HTML structure
 		this.ntf = document.createElement("div");
-		this.ntf.className = this.options.al_no + " ns-" + this.options.layout + " ns-effect-" + this.options.effect + " ns-type-" + this.options.type;
-		let strinner = '<div class="ns-box-inner">';
+		this.ntf.className = `${this.options.al_no} ns-${this.options.layout} ns-effect-${this.options.effect} ns-type-${this.options.type}`;
+		let strinner = "<div class=\"ns-box-inner\">";
 		strinner += this.options.message;
 		strinner += "</div>";
 		this.ntf.innerHTML = strinner;
@@ -122,7 +122,6 @@
 
 	/**
 	 * Dismiss the notification
-	 *
 	 * @param {boolean} [close] call the onClose callback at the end
 	 */
 	NotificationFx.prototype.dismiss = function (close = true) {
@@ -155,4 +154,4 @@
 	 * Add to global namespace
 	 */
 	window.NotificationFx = NotificationFx;
-})(window);
+}(window));

@@ -1,9 +1,6 @@
-/* Magic Mirror Test config newsfeed module
- *
- * By Rodrigo Ramírez Norambuena https://rodrigoramirez.com
- * MIT Licensed.
- */
 let config = {
+	address: "0.0.0.0",
+	ipWhitelist: [],
 	timeFormat: 12,
 
 	modules: [
@@ -14,7 +11,7 @@ let config = {
 				feeds: [
 					{
 						title: "Rodrigo Ramirez Blog",
-						url: "http://localhost:8080/tests/configs/data/feed_test_rodrigoramirez.xml"
+						url: "http://localhost:8080/tests/mocks/newsfeed_test.xml"
 					}
 				]
 			}

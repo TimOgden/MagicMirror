@@ -1,9 +1,6 @@
-/* Magic Mirror Test config sample module hello world default config
- *
- * By Rodrigo Ramírez Norambuena https://rodrigoramirez.com
- * MIT Licensed.
- */
 let config = {
+	address: "0.0.0.0",
+	ipWhitelist: [],
 	modules: [
 		{
 			module: "helloworld",

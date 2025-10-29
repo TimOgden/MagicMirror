@@ -1,39 +1,30 @@
 /* global WeatherProvider, WeatherObject */
 
-/* Magic Mirror
- * Module: Weather
- * Provider: Weatherbit
- *
- * By Andrew Pometti
- * MIT Licensed
- *
- * This class is a provider for Weatherbit, based on Nicholas Hubbard's class
- * for Dark Sky & Vince Peri's class for Weather.gov.
+/*
+ * This class is a provider for Weatherbit,
+ * see https://www.weatherbit.io/
  */
 WeatherProvider.register("weatherbit", {
-	// Set the name of the provider.
-	// Not strictly required, but helps for debugging.
+
+	/*
+	 * Set the name of the provider.
+	 * Not strictly required, but helps for debugging.
+	 */
 	providerName: "Weatherbit",
 
 	// Set the default config properties that is specific to this provider
 	defaults: {
 		apiBase: "https://api.weatherbit.io/v2.0",
-		weatherEndpoint: "/current",
 		apiKey: "",
 		lat: 0,
 		lon: 0
 	},
 
-	units: {
-		imperial: "I",
-		metric: "M"
-	},
-
-	fetchedLocation: function () {
+	fetchedLocation () {
 		return this.fetchedLocationName || "";
 	},
 
-	fetchCurrentWeather() {
+	fetchCurrentWeather () {
 		this.fetchData(this.getUrl())
 			.then((data) => {
 				if (!data || !data.data[0] || typeof data.data[0].temp === "undefined") {
@@ -50,7 +41,7 @@ WeatherProvider.register("weatherbit", {
 			.finally(() => this.updateAvailable());
 	},
 
-	fetchWeatherForecast() {
+	fetchWeatherForecast () {
 		this.fetchData(this.getUrl())
 			.then((data) => {
 				if (!data || !data.data) {
@@ -61,7 +52,7 @@ WeatherProvider.register("weatherbit", {
 				const forecast = this.generateWeatherObjectsFromForecast(data.data);
 				this.setWeatherForecast(forecast);
 
-				this.fetchedLocationName = data.city_name + ", " + data.state_code;
+				this.fetchedLocationName = `${data.city_name}, ${data.state_code}`;
 			})
 			.catch(function (request) {
 				Log.error("Could not load data ... ", request);
@@ -69,45 +60,69 @@ WeatherProvider.register("weatherbit", {
 			.finally(() => this.updateAvailable());
 	},
 
+	/**
+	 * Overrides method for setting config to check if endpoint is correct for hourly
+	 * @param {object} config The configuration object
+	 */
+	setConfig (config) {
+		this.config = config;
+		if (!this.config.weatherEndpoint) {
+			switch (this.config.type) {
+				case "hourly":
+					this.config.weatherEndpoint = "/forecast/hourly";
+					break;
+				case "daily":
+				case "forecast":
+					this.config.weatherEndpoint = "/forecast/daily";
+					break;
+				case "current":
+					this.config.weatherEndpoint = "/current";
+					break;
+				default:
+					Log.error("weatherEndpoint not configured and could not resolve it based on type");
+			}
+		}
+	},
+
 	// Create a URL from the config and base URL.
-	getUrl() {
-		const units = this.units[this.config.units] || "auto";
-		return `${this.config.apiBase}${this.config.weatherEndpoint}?lat=${this.config.lat}&lon=${this.config.lon}&units=${units}&key=${this.config.apiKey}`;
+	getUrl () {
+		return `${this.config.apiBase}${this.config.weatherEndpoint}?lat=${this.config.lat}&lon=${this.config.lon}&units=M&key=${this.config.apiKey}`;
 	},
 
 	// Implement WeatherDay generator.
-	generateWeatherDayFromCurrentWeather(currentWeatherData) {
+	generateWeatherDayFromCurrentWeather (currentWeatherData) {
 		//Calculate TZ Offset and invert to convert Sunrise/Sunset times to Local
 		const d = new Date();
 		let tzOffset = d.getTimezoneOffset();
 		tzOffset = tzOffset * -1;
 
-		const currentWeather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+		const currentWeather = new WeatherObject();
 
-		currentWeather.date = moment(currentWeatherData.data[0].ts, "X");
+		currentWeather.date = moment.unix(currentWeatherData.data[0].ts);
 		currentWeather.humidity = parseFloat(currentWeatherData.data[0].rh);
 		currentWeather.temperature = parseFloat(currentWeatherData.data[0].temp);
 		currentWeather.windSpeed = parseFloat(currentWeatherData.data[0].wind_spd);
-		currentWeather.windDirection = currentWeatherData.data[0].wind_dir;
+		currentWeather.windFromDirection = currentWeatherData.data[0].wind_dir;
 		currentWeather.weatherType = this.convertWeatherType(currentWeatherData.data[0].weather.icon);
 		currentWeather.sunrise = moment(currentWeatherData.data[0].sunrise, "HH:mm").add(tzOffset, "m");
 		currentWeather.sunset = moment(currentWeatherData.data[0].sunset, "HH:mm").add(tzOffset, "m");
 
-		this.fetchedLocationName = currentWeatherData.data[0].city_name + ", " + currentWeatherData.data[0].state_code;
+		this.fetchedLocationName = `${currentWeatherData.data[0].city_name}, ${currentWeatherData.data[0].state_code}`;
 
 		return currentWeather;
 	},
 
-	generateWeatherObjectsFromForecast(forecasts) {
+	generateWeatherObjectsFromForecast (forecasts) {
 		const days = [];
 
 		for (const forecast of forecasts) {
-			const weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits);
+			const weather = new WeatherObject();
 
 			weather.date = moment(forecast.datetime, "YYYY-MM-DD");
 			weather.minTemperature = forecast.min_temp;
 			weather.maxTemperature = forecast.max_temp;
-			weather.precipitation = forecast.precip;
+			weather.precipitationAmount = forecast.precip;
+			weather.precipitationProbability = forecast.pop;
 			weather.weatherType = this.convertWeatherType(forecast.weather.icon);
 
 			days.push(weather);
@@ -117,7 +132,7 @@ WeatherProvider.register("weatherbit", {
 	},
 
 	// Map icons from Dark Sky to our icons.
-	convertWeatherType(weatherType) {
+	convertWeatherType (weatherType) {
 		const weatherTypes = {
 			t01d: "day-thunderstorm",
 			t01n: "night-alt-thunderstorm",

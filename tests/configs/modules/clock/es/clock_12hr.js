@@ -1,9 +1,6 @@
-/* Magic Mirror Test config for default clock module
- *
- * By Rodrigo Ramírez Norambuena https://rodrigoramirez.com
- * MIT Licensed.
- */
 let config = {
+	address: "0.0.0.0",
+	ipWhitelist: [],
 	language: "es",
 	timeFormat: 12,
 

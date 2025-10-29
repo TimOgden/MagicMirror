@@ -1,17 +1,16 @@
-/* global WeatherProvider, WeatherObject */
+/* global WeatherProvider, WeatherObject, WeatherUtils */
 
-/* Magic Mirror
- * Module: Weather
- *
- * By Malcolm Oakes https://github.com/maloakes
- * MIT Licensed.
- *
- * This class is a provider for UK Met Office Datapoint.
+/*
+ * This class is a provider for UK Met Office Datapoint,
+ * see https://www.metoffice.gov.uk/
  */
 WeatherProvider.register("ukmetoffice", {
-	// Set the name of the provider.
-	// This isn't strictly necessary, since it will fallback to the provider identifier
-	// But for debugging (and future alerts) it would be nice to have the real name.
+
+	/*
+	 * Set the name of the provider.
+	 * This isn't strictly necessary, since it will fallback to the provider identifier
+	 * But for debugging (and future alerts) it would be nice to have the real name.
+	 */
 	providerName: "UK Met Office",
 
 	// Set the default config properties that is specific to this provider
@@ -21,18 +20,16 @@ WeatherProvider.register("ukmetoffice", {
 		apiKey: ""
 	},
 
-	units: {
-		imperial: "us",
-		metric: "si"
-	},
-
 	// Overwrite the fetchCurrentWeather method.
-	fetchCurrentWeather() {
+	fetchCurrentWeather () {
 		this.fetchData(this.getUrl("3hourly"))
 			.then((data) => {
 				if (!data || !data.SiteRep || !data.SiteRep.DV || !data.SiteRep.DV.Location || !data.SiteRep.DV.Location.Period || data.SiteRep.DV.Location.Period.length === 0) {
-					// Did not receive usable new data.
-					// Maybe this needs a better check?
+
+					/*
+					 * Did not receive usable new data.
+					 * Maybe this needs a better check?
+					 */
 					return;
 				}
 
@@ -48,12 +45,15 @@ WeatherProvider.register("ukmetoffice", {
 	},
 
 	// Overwrite the fetchCurrentWeather method.
-	fetchWeatherForecast() {
+	fetchWeatherForecast () {
 		this.fetchData(this.getUrl("daily"))
 			.then((data) => {
 				if (!data || !data.SiteRep || !data.SiteRep.DV || !data.SiteRep.DV.Location || !data.SiteRep.DV.Location.Period || data.SiteRep.DV.Location.Period.length === 0) {
-					// Did not receive usable new data.
-					// Maybe this needs a better check?
+
+					/*
+					 * Did not receive usable new data.
+					 * Maybe this needs a better check?
+					 */
 					return;
 				}
 
@@ -72,15 +72,15 @@ WeatherProvider.register("ukmetoffice", {
 	/*
 	 * Gets the complete url for the request
 	 */
-	getUrl(forecastType) {
+	getUrl (forecastType) {
 		return this.config.apiBase + this.config.locationID + this.getParams(forecastType);
 	},
 
 	/*
 	 * Generate a WeatherObject based on currentWeatherInformation
 	 */
-	generateWeatherObjectFromCurrentWeather(currentWeatherData) {
-		const currentWeather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
+	generateWeatherObjectFromCurrentWeather (currentWeatherData) {
+		const currentWeather = new WeatherObject();
 		const location = currentWeatherData.SiteRep.DV.Location;
 
 		// data times are always UTC
@@ -96,18 +96,21 @@ WeatherProvider.register("ukmetoffice", {
 			if (periodDate.isSameOrAfter(moment.utc().startOf("day"))) {
 				// check this is the period we want, after today the diff will be -ve
 				if (moment().diff(periodDate, "minutes") > 0) {
-					// loop round the reports looking for the one we are in
-					// $ value specifies the time in minutes-of-the-day: 0, 180, 360,...1260
+
+					/*
+					 * loop round the reports looking for the one we are in
+					 * $ value specifies the time in minutes-of-the-day: 0, 180, 360,...1260
+					 */
 					for (const rep of period.Rep) {
 						const p = rep.$;
 						if (timeInMins >= p && timeInMins - 180 < p) {
 							// finally got the one we want, so populate weather object
 							currentWeather.humidity = rep.H;
-							currentWeather.temperature = this.convertTemp(rep.T);
-							currentWeather.feelsLikeTemp = this.convertTemp(rep.F);
-							currentWeather.precipitation = parseInt(rep.Pp);
-							currentWeather.windSpeed = this.convertWindSpeed(rep.S);
-							currentWeather.windDirection = this.convertWindDirection(rep.D);
+							currentWeather.temperature = rep.T;
+							currentWeather.feelsLikeTemp = rep.F;
+							currentWeather.precipitationProbability = parseInt(rep.Pp);
+							currentWeather.windSpeed = WeatherUtils.convertWindToMetric(rep.S);
+							currentWeather.windFromDirection = WeatherUtils.convertWindDirection(rep.D);
 							currentWeather.weatherType = this.convertWeatherType(rep.W);
 						}
 					}
@@ -124,13 +127,15 @@ WeatherProvider.register("ukmetoffice", {
 	/*
 	 * Generate WeatherObjects based on forecast information
 	 */
-	generateWeatherObjectsFromForecast(forecasts) {
+	generateWeatherObjectsFromForecast (forecasts) {
 		const days = [];
 
-		// loop round the (5) periods getting the data
-		// for each period array, Day is [0], Night is [1]
+		/*
+		 * loop round the (5) periods getting the data
+		 * for each period array, Day is [0], Night is [1]
+		 */
 		for (const period of forecasts.SiteRep.DV.Location.Period) {
-			const weather = new WeatherObject(this.config.units, this.config.tempUnits, this.config.windUnits, this.config.useKmh);
+			const weather = new WeatherObject();
 
 			// data times are always UTC
 			const dateStr = period.value;
@@ -140,10 +145,10 @@ WeatherProvider.register("ukmetoffice", {
 			if (periodDate.isSameOrAfter(moment.utc().startOf("day"))) {
 				// populate the weather object
 				weather.date = moment.utc(dateStr.substr(0, 10), "YYYY-MM-DD");
-				weather.minTemperature = this.convertTemp(period.Rep[1].Nm);
-				weather.maxTemperature = this.convertTemp(period.Rep[0].Dm);
+				weather.minTemperature = period.Rep[1].Nm;
+				weather.maxTemperature = period.Rep[0].Dm;
 				weather.weatherType = this.convertWeatherType(period.Rep[0].W);
-				weather.precipitation = parseInt(period.Rep[0].PPd);
+				weather.precipitationProbability = parseInt(period.Rep[0].PPd);
 
 				days.push(weather);
 			}
@@ -155,7 +160,7 @@ WeatherProvider.register("ukmetoffice", {
 	/*
 	 * Convert the Met Office icons to a more usable name.
 	 */
-	convertWeatherType(weatherType) {
+	convertWeatherType (weatherType) {
 		const weatherTypes = {
 			0: "night-clear",
 			1: "day-sunny",
@@ -192,56 +197,15 @@ WeatherProvider.register("ukmetoffice", {
 		return weatherTypes.hasOwnProperty(weatherType) ? weatherTypes[weatherType] : null;
 	},
 
-	/*
-	 * Convert temp (from degrees C) if required
-	 */
-	convertTemp(tempInC) {
-		return this.tempUnits === "imperial" ? (tempInC * 9) / 5 + 32 : tempInC;
-	},
-
-	/*
-	 * Convert wind speed (from mph to m/s or km/h) if required
-	 */
-	convertWindSpeed(windInMph) {
-		return this.windUnits === "metric" ? (this.useKmh ? windInMph * 1.60934 : windInMph / 2.23694) : windInMph;
-	},
-
-	/*
-	 * Convert the wind direction cardinal to value
-	 */
-	convertWindDirection(windDirection) {
-		const windCardinals = {
-			N: 0,
-			NNE: 22,
-			NE: 45,
-			ENE: 67,
-			E: 90,
-			ESE: 112,
-			SE: 135,
-			SSE: 157,
-			S: 180,
-			SSW: 202,
-			SW: 225,
-			WSW: 247,
-			W: 270,
-			WNW: 292,
-			NW: 315,
-			NNW: 337
-		};
-
-		return windCardinals.hasOwnProperty(windDirection) ? windCardinals[windDirection] : null;
-	},
-
 	/**
 	 * Generates an url with api parameters based on the config.
-	 *
 	 * @param {string} forecastType daily or 3hourly forecast
 	 * @returns {string} url
 	 */
-	getParams(forecastType) {
+	getParams (forecastType) {
 		let params = "?";
-		params += "res=" + forecastType;
-		params += "&key=" + this.config.apiKey;
+		params += `res=${forecastType}`;
+		params += `&key=${this.config.apiKey}`;
 		return params;
 	}
 });

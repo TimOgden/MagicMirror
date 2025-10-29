@@ -1,9 +1,6 @@
-/* Magic Mirror Test config default calendar
- *              with authentication old config
- * By Rodrigo Ramírez Norambuena https://rodrigoramirez.com
- * MIT Licensed.
- */
 let config = {
+	address: "0.0.0.0",
+	ipWhitelist: [],
 	timeFormat: 12,
 
 	modules: [
@@ -14,7 +11,7 @@ let config = {
 				calendars: [
 					{
 						maximumNumberOfDays: 10000,
-						url: "http://localhost:8080/tests/configs/data/calendar_test.ics",
+						url: "http://localhost:8080/tests/mocks/calendar_test.ics",
 						user: "MagicMirror",
 						pass: "CallMeADog"
 					}

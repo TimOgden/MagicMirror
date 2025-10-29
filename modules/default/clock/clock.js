@@ -1,11 +1,5 @@
-/* global SunCalc */
+/* global SunCalc, formatTime */
 
-/* Magic Mirror
- * Module: Clock
- *
- * By Michael Teeuw https://michaelteeuw.nl
- * MIT Licensed.
- */
 Module.register("clock", {
 	// Module config defaults.
 	defaults: {
@@ -20,32 +14,33 @@ Module.register("clock", {
 		clockBold: false,
 		showDate: true,
 		showTime: true,
-		showWeek: false,
+		showWeek: false, // options: true, false, 'short'
 		dateFormat: "dddd, LL",
+		sendNotifications: false,
 
 		/* specific to the analog clock */
 		analogSize: "200px",
 		analogFace: "simple", // options: 'none', 'simple', 'face-###' (where ### is 001 to 012 inclusive)
 		analogPlacement: "bottom", // options: 'top', 'bottom', 'left', 'right'
 		analogShowDate: "top", // OBSOLETE, can be replaced with analogPlacement and showTime, options: false, 'top', or 'bottom'
-		secondsColor: "#888888",
+		secondsColor: "#888888", // DEPRECATED, use CSS instead. Class "clock-second-digital" for digital clock, "clock-second" for analog clock.
 
-		showSunTimes: false,
-		showMoonTimes: false,
+		showSunTimes: false, // options: true, false, 'disableNextEvent'
+		showMoonTimes: false, // options: false, 'times' (rise/set), 'percent' (lit percent), 'phase' (current phase), or 'both' (percent & phase)
 		lat: 47.630539,
 		lon: -122.344147
 	},
 	// Define required scripts.
-	getScripts: function () {
+	getScripts () {
 		return ["moment.js", "moment-timezone.js", "suncalc.js"];
 	},
 	// Define styles.
-	getStyles: function () {
-		return ["clock_styles.css"];
+	getStyles () {
+		return ["clock_styles.css", "font-awesome.css"];
 	},
 	// Define start sequence.
-	start: function () {
-		Log.info("Starting module: " + this.name);
+	start () {
+		Log.info(`Starting module: ${this.name}`);
 
 		// Schedule update interval.
 		this.second = moment().second();
@@ -66,47 +61,52 @@ Module.register("clock", {
 		const notificationTimer = () => {
 			this.updateDom();
 
-			// If seconds is displayed CLOCK_SECOND-notification should be sent (but not when CLOCK_MINUTE-notification is sent)
-			if (this.config.displaySeconds) {
-				this.second = moment().second();
-				if (this.second !== 0) {
-					this.sendNotification("CLOCK_SECOND", this.second);
-					setTimeout(notificationTimer, delayCalculator(0));
-					return;
+			if (this.config.sendNotifications) {
+				// If seconds is displayed CLOCK_SECOND-notification should be sent (but not when CLOCK_MINUTE-notification is sent)
+				if (this.config.displaySeconds) {
+					this.second = moment().second();
+					if (this.second !== 0) {
+						this.sendNotification("CLOCK_SECOND", this.second);
+						setTimeout(notificationTimer, delayCalculator(0));
+						return;
+					}
 				}
+
+				// If minute changed or seconds isn't displayed send CLOCK_MINUTE-notification
+				this.minute = moment().minute();
+				this.sendNotification("CLOCK_MINUTE", this.minute);
 			}
 
-			// If minute changed or seconds isn't displayed send CLOCK_MINUTE-notification
-			this.minute = moment().minute();
-			this.sendNotification("CLOCK_MINUTE", this.minute);
 			setTimeout(notificationTimer, delayCalculator(0));
 		};
 
-		// Set the initial timeout with the amount of seconds elapsed as reducedSeconds so it will trigger when the minute changes
+		// Set the initial timeout with the amount of seconds elapsed as
+		// reducedSeconds, so it will trigger when the minute changes
 		setTimeout(notificationTimer, delayCalculator(this.second));
 
 		// Set locale.
 		moment.locale(config.language);
 	},
 	// Override dom generator.
-	getDom: function () {
+	getDom () {
 		const wrapper = document.createElement("div");
-		wrapper.classList.add("clockGrid");
+		wrapper.classList.add("clock-grid");
 
 		/************************************
 		 * Create wrappers for analog and digital clock
 		 */
 		const analogWrapper = document.createElement("div");
-		analogWrapper.className = "clockCircle";
+		analogWrapper.className = "clock-circle";
 		const digitalWrapper = document.createElement("div");
 		digitalWrapper.className = "digital";
-		digitalWrapper.style.gridArea = "center";
 
 		/************************************
 		 * Create wrappers for DIGITAL clock
 		 */
 		const dateWrapper = document.createElement("div");
 		const timeWrapper = document.createElement("div");
+		const hoursWrapper = document.createElement("span");
+		const minutesWrapper = document.createElement("span");
 		const secondsWrapper = document.createElement("sup");
 		const periodWrapper = document.createElement("span");
 		const sunWrapper = document.createElement("div");
@@ -116,30 +116,17 @@ Module.register("clock", {
 		// Style Wrappers
 		dateWrapper.className = "date normal medium";
 		timeWrapper.className = "time bright large light";
-		secondsWrapper.className = "seconds dimmed";
+		hoursWrapper.className = "clock-hour-digital";
+		minutesWrapper.className = "clock-minute-digital";
+		secondsWrapper.className = "clock-second-digital dimmed";
 		sunWrapper.className = "sun dimmed small";
 		moonWrapper.className = "moon dimmed small";
 		weekWrapper.className = "week dimmed medium";
 
 		// Set content of wrappers.
-		// The moment().format("h") method has a bug on the Raspberry Pi.
-		// So we need to generate the timestring manually.
-		// See issue: https://github.com/MichMich/MagicMirror/issues/181
-		let timeString;
 		const now = moment();
 		if (this.config.timezone) {
 			now.tz(this.config.timezone);
-		}
-
-		let hourSymbol = "HH";
-		if (this.config.timeFormat !== 24) {
-			hourSymbol = "h";
-		}
-
-		if (this.config.clockBold) {
-			timeString = now.format(hourSymbol + '[<span class="bold">]mm[</span>]');
-		} else {
-			timeString = now.format(hourSymbol + ":mm");
 		}
 
 		if (this.config.showDate) {
@@ -148,7 +135,21 @@ Module.register("clock", {
 		}
 
 		if (this.config.displayType !== "analog" && this.config.showTime) {
-			timeWrapper.innerHTML = timeString;
+			let hourSymbol = "HH";
+			if (this.config.timeFormat !== 24) {
+				hourSymbol = "h";
+			}
+
+			hoursWrapper.innerHTML = now.format(hourSymbol);
+			minutesWrapper.innerHTML = now.format("mm");
+
+			timeWrapper.appendChild(hoursWrapper);
+			if (this.config.clockBold) {
+				minutesWrapper.classList.add("bold");
+			} else {
+				timeWrapper.innerHTML += ":";
+			}
+			timeWrapper.appendChild(minutesWrapper);
 			secondsWrapper.innerHTML = now.format("ss");
 			if (this.config.showPeriodUpper) {
 				periodWrapper.innerHTML = now.format("A");
@@ -164,50 +165,34 @@ Module.register("clock", {
 			digitalWrapper.appendChild(timeWrapper);
 		}
 
-		/**
-		 * Format the time according to the config
-		 *
-		 * @param {object} config The config of the module
-		 * @param {object} time time to format
-		 * @returns {string} The formatted time string
-		 */
-		function formatTime(config, time) {
-			let formatString = hourSymbol + ":mm";
-			if (config.showPeriod && config.timeFormat !== 24) {
-				formatString += config.showPeriodUpper ? "A" : "a";
-			}
-			return moment(time).format(formatString);
-		}
-
 		/****************************************************************
 		 * Create wrappers for Sun Times, only if specified in config
 		 */
 		if (this.config.showSunTimes) {
 			const sunTimes = SunCalc.getTimes(now, this.config.lat, this.config.lon);
 			const isVisible = now.isBetween(sunTimes.sunrise, sunTimes.sunset);
-			let nextEvent;
-			if (now.isBefore(sunTimes.sunrise)) {
-				nextEvent = sunTimes.sunrise;
-			} else if (now.isBefore(sunTimes.sunset)) {
-				nextEvent = sunTimes.sunset;
-			} else {
-				const tomorrowSunTimes = SunCalc.getTimes(now.clone().add(1, "day"), this.config.lat, this.config.lon);
-				nextEvent = tomorrowSunTimes.sunrise;
+			let sunWrapperInnerHTML = "";
+
+			if (this.config.showSunTimes !== "disableNextEvent") {
+				let nextEvent;
+				if (now.isBefore(sunTimes.sunrise)) {
+					nextEvent = sunTimes.sunrise;
+				} else if (now.isBefore(sunTimes.sunset)) {
+					nextEvent = sunTimes.sunset;
+				} else {
+					const tomorrowSunTimes = SunCalc.getTimes(now.clone().add(1, "day"), this.config.lat, this.config.lon);
+					nextEvent = tomorrowSunTimes.sunrise;
+				}
+				const untilNextEvent = moment.duration(moment(nextEvent).diff(now));
+				const untilNextEventString = `${untilNextEvent.hours()}h ${untilNextEvent.minutes()}m`;
+
+				sunWrapperInnerHTML = `<span class="${isVisible ? "bright" : ""}"><i class="fas fa-sun" aria-hidden="true"></i> ${untilNextEventString}</span>`;
 			}
-			const untilNextEvent = moment.duration(moment(nextEvent).diff(now));
-			const untilNextEventString = untilNextEvent.hours() + "h " + untilNextEvent.minutes() + "m";
-			sunWrapper.innerHTML =
-				'<span class="' +
-				(isVisible ? "bright" : "") +
-				'"><i class="fa fa-sun-o" aria-hidden="true"></i> ' +
-				untilNextEventString +
-				"</span>" +
-				'<span><i class="fa fa-arrow-up" aria-hidden="true"></i> ' +
-				formatTime(this.config, sunTimes.sunrise) +
-				"</span>" +
-				'<span><i class="fa fa-arrow-down" aria-hidden="true"></i> ' +
-				formatTime(this.config, sunTimes.sunset) +
-				"</span>";
+
+			sunWrapperInnerHTML += `<span><i class="fas fa-arrow-up" aria-hidden="true"></i> ${formatTime(this.config, sunTimes.sunrise)}</span>`
+			  + `<span><i class="fas fa-arrow-down" aria-hidden="true"></i> ${formatTime(this.config, sunTimes.sunset)}</span>`;
+
+			sunWrapper.innerHTML = sunWrapperInnerHTML;
 			digitalWrapper.appendChild(sunWrapper);
 		}
 
@@ -226,24 +211,25 @@ Module.register("clock", {
 				moonSet = nextMoonTimes.set;
 			}
 			const isVisible = now.isBetween(moonRise, moonSet) || moonTimes.alwaysUp === true;
-			const illuminatedFractionString = Math.round(moonIllumination.fraction * 100) + "%";
-			moonWrapper.innerHTML =
-				'<span class="' +
-				(isVisible ? "bright" : "") +
-				'"><i class="fa fa-moon-o" aria-hidden="true"></i> ' +
-				illuminatedFractionString +
-				"</span>" +
-				'<span><i class="fa fa-arrow-up" aria-hidden="true"></i> ' +
-				(moonRise ? formatTime(this.config, moonRise) : "...") +
-				"</span>" +
-				'<span><i class="fa fa-arrow-down" aria-hidden="true"></i> ' +
-				(moonSet ? formatTime(this.config, moonSet) : "...") +
-				"</span>";
+			const showFraction = ["both", "percent"].includes(this.config.showMoonTimes);
+			const showUnicode = ["both", "phase"].includes(this.config.showMoonTimes);
+			const illuminatedFractionString = `${Math.round(moonIllumination.fraction * 100)}%`;
+			const image = showUnicode ? [..."🌑🌒🌓🌔🌕🌖🌗🌘"][Math.floor(moonIllumination.phase * 8)] : "<i class=\"fas fa-moon\" aria-hidden=\"true\"></i>";
+
+			moonWrapper.innerHTML
+				= `<span class="${isVisible ? "bright" : ""}">${image} ${showFraction ? illuminatedFractionString : ""}</span>`
+				  + `<span><i class="fas fa-arrow-up" aria-hidden="true"></i> ${moonRise ? formatTime(this.config, moonRise) : "..."}</span>`
+				  + `<span><i class="fas fa-arrow-down" aria-hidden="true"></i> ${moonSet ? formatTime(this.config, moonSet) : "..."}</span>`;
 			digitalWrapper.appendChild(moonWrapper);
 		}
 
 		if (this.config.showWeek) {
-			weekWrapper.innerHTML = this.translate("WEEK", { weekNumber: now.week() });
+			if (this.config.showWeek === "short") {
+				weekWrapper.innerHTML = this.translate("WEEK_SHORT", { weekNumber: now.week() });
+			} else {
+				weekWrapper.innerHTML = this.translate("WEEK", { weekNumber: now.week() });
+			}
+
 			digitalWrapper.appendChild(weekWrapper);
 		}
 
@@ -266,26 +252,26 @@ Module.register("clock", {
 			analogWrapper.style.height = this.config.analogSize;
 
 			if (this.config.analogFace !== "" && this.config.analogFace !== "simple" && this.config.analogFace !== "none") {
-				analogWrapper.style.background = "url(" + this.data.path + "faces/" + this.config.analogFace + ".svg)";
+				analogWrapper.style.background = `url(${this.data.path}faces/${this.config.analogFace}.svg)`;
 				analogWrapper.style.backgroundSize = "100%";
 
-				// The following line solves issue: https://github.com/MichMich/MagicMirror/issues/611
+				// The following line solves issue: https://github.com/MagicMirrorOrg/MagicMirror/issues/611
 				// analogWrapper.style.border = "1px solid black";
 				analogWrapper.style.border = "rgba(0, 0, 0, 0.1)"; //Updated fix for Issue 611 where non-black backgrounds are used
 			} else if (this.config.analogFace !== "none") {
 				analogWrapper.style.border = "2px solid white";
 			}
 			const clockFace = document.createElement("div");
-			clockFace.className = "clockFace";
+			clockFace.className = "clock-face";
 
 			const clockHour = document.createElement("div");
-			clockHour.id = "clockHour";
-			clockHour.style.transform = "rotate(" + hour + "deg)";
-			clockHour.className = "clockHour";
+			clockHour.id = "clock-hour";
+			clockHour.style.transform = `rotate(${hour}deg)`;
+			clockHour.className = "clock-hour";
 			const clockMinute = document.createElement("div");
-			clockMinute.id = "clockMinute";
-			clockMinute.style.transform = "rotate(" + minute + "deg)";
-			clockMinute.className = "clockMinute";
+			clockMinute.id = "clock-minute";
+			clockMinute.style.transform = `rotate(${minute}deg)`;
+			clockMinute.className = "clock-minute";
 
 			// Combine analog wrappers
 			clockFace.appendChild(clockHour);
@@ -293,33 +279,38 @@ Module.register("clock", {
 
 			if (this.config.displaySeconds) {
 				const clockSecond = document.createElement("div");
-				clockSecond.id = "clockSecond";
-				clockSecond.style.transform = "rotate(" + second + "deg)";
-				clockSecond.className = "clockSecond";
-				clockSecond.style.backgroundColor = this.config.secondsColor;
+				clockSecond.id = "clock-second";
+				clockSecond.style.transform = `rotate(${second}deg)`;
+				clockSecond.className = "clock-second";
+				clockSecond.style.backgroundColor = this.config.secondsColor; /* DEPRECATED, to be removed in a future version , use CSS instead */
 				clockFace.appendChild(clockSecond);
 			}
 			analogWrapper.appendChild(clockFace);
 		}
 
 		/*******************************************
-		 * Update placement, respect old analogShowDate even if its not needed anymore
+		 * Update placement, respect old analogShowDate even if it's not needed anymore
 		 */
 		if (this.config.displayType === "analog") {
 			// Display only an analog clock
-			if (this.config.analogShowDate === "top") {
-				wrapper.classList.add("clockGrid--bottom");
-			} else if (this.config.analogShowDate === "bottom") {
-				wrapper.classList.add("clockGrid--top");
-			} else {
-				//analogWrapper.style.gridArea = "center";
+			if (this.config.showDate) {
+				// Add date to the analog clock
+				dateWrapper.innerHTML = now.format(this.config.dateFormat);
+				wrapper.appendChild(dateWrapper);
 			}
+			if (this.config.analogShowDate === "bottom") {
+				wrapper.classList.add("clock-grid-bottom");
+			} else if (this.config.analogShowDate === "top") {
+				wrapper.classList.add("clock-grid-top");
+			}
+			wrapper.appendChild(analogWrapper);
+		} else if (this.config.displayType === "digital") {
+			wrapper.appendChild(digitalWrapper);
 		} else if (this.config.displayType === "both") {
-			wrapper.classList.add("clockGrid--" + this.config.analogPlacement);
+			wrapper.classList.add(`clock-grid-${this.config.analogPlacement}`);
+			wrapper.appendChild(analogWrapper);
+			wrapper.appendChild(digitalWrapper);
 		}
-
-		wrapper.appendChild(analogWrapper);
-		wrapper.appendChild(digitalWrapper);
 
 		// Return the wrapper to the dom.
 		return wrapper;
