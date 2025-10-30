@@ -8,28 +8,8 @@
  * and https://docs.magicmirror.builders/modules/configuration.html
  */
 
-function loadJSON(filePath) {
-	if (typeof module !== "undefined") {
-		return require(filePath);
-	} else {
-		try {
-			var xmlhttp = new XMLHttpRequest();
-			xmlhttp.open("GET", filePath, false);
-			xmlhttp.send();
-			if(xmlhttp.stats === 200) {
-				return JSON.parse(xmlhttp.responseText);
-			} else {
-				throw "Unexpected status code!";
-			}
-		} catch (e) {
-			console.error(e);
-			return {};
-		}
-	}
-}
-
 let config = {
-	address: "localhost", 	// Address to listen on, can be:
+	address: "0.0.0.0", 	// Address to listen on, can be:
 							// - "localhost", "127.0.0.1", "::1" to listen on loopback interface
 							// - another specific IPv4/6 to listen on a specific interface
 							// - "0.0.0.0", "::" to listen on any interface
@@ -37,7 +17,7 @@ let config = {
 	port: 8080,
 	basePath: "/", 	// The URL path where MagicMirror is hosted. If you are using a Reverse proxy
 					// you must set the sub path here. basePath must end with a /
-	ipWhitelist: ["127.0.0.1", "::ffff:127.0.0.1", "::1"], 	// Set [] to allow all IP addresses
+	ipWhitelist: [], 	// Set [] to allow all IP addresses
 															// or add a specific IPv4 of 192.168.1.5 :
 															// ["127.0.0.1", "::ffff:127.0.0.1", "::1", "::ffff:192.168.1.5"],
 															// or IPv4 range of 192.168.3.0 --> 192.168.3.15 use CIDR format :
@@ -85,7 +65,7 @@ let config = {
 		},
 		{
 			module: "compliments",
-			position: "bottom_bar",
+			position: "lower_third",
 			config: {
 				compliments: {
 					anytime: [
@@ -148,7 +128,7 @@ let config = {
 		},
 		{
 			module: "newsfeed",
-			position: "lower_third",
+			position: "bottom_bar",
 			config: {
 				feeds: [
 					{
